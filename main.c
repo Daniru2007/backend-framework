@@ -1,13 +1,4 @@
-#include "netinet/in.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
-#include "sys/socket.h"
-#include "unistd.h"
-#include <asm-generic/socket.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-
+#include "server/server.h"
 #define PORT 8000
 
 int main() {
@@ -60,7 +51,6 @@ int main() {
     char *url = (char *)malloc(strlen(tok));
     char *http_version = (char *)malloc(strlen(tok));
     sscanf(tok, "%s %s %s", method, url, http_version);
-    // printf("%s|%s|%s\n", method, url, http_version);
     int i = 0;
     char ***heads = (char ***)malloc(sizeof(char **) * 100);
     while (1) {
