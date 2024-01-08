@@ -48,61 +48,71 @@ void _accept(server *web_server) {
   return;
 }
 
+void _read(server *web_server) {
+  ssize_t valread;
+  valread = read(web_server->client_socket, web_server->buffer, 1024 - 1);
+  char *buf = malloc(sizeof(web_server->buffer));
+  strcpy(buf, web_server->buffer);
+  char *tok = strtok(buf, "\n");
+  web_server->method = (char *)malloc(strlen(tok));
+  web_server->url = (char *)malloc(strlen(tok));
+  web_server->http_version = (char *)malloc(strlen(tok));
+  sscanf(tok, "%s %s %s", web_server->method, web_server->url,
+         web_server->http_version);
+  web_server->header_len = 0;
+  web_server->headers = (char ***)malloc(sizeof(char **) * 100);
+  while (1) {
+    tok = strtok(NULL, "\n");
+    web_server->headers[web_server->header_len] =
+        (char **)malloc(sizeof(char *) * 100);
+    web_server->headers[web_server->header_len][0] =
+        (char *)malloc(strlen(tok));
+    web_server->headers[web_server->header_len][1] =
+        (char *)malloc(strlen(tok));
+    if (tok == NULL) {
+      break;
+    }
+    if (strcmp(tok, "\r") == 0) {
+      break;
+    }
+    sscanf(tok, "%[^:]%*c%*c%[^\n]",
+           web_server->headers[web_server->header_len][0],
+           web_server->headers[web_server->header_len][1]);
+    web_server->header_len++;
+  }
+
+  for (int x = 0; x < web_server->header_len; x++) {
+    printf("%s->", web_server->headers[x][0]);
+    printf("%s\n", web_server->headers[x][1]);
+  }
+  free(buf);
+}
+
 void accept_clients(server *web_server) {
   _listen(web_server);
   while (1) {
-    ssize_t valread;
-    char buffer[1024] = {0};
     char *msg = "HTTP/1.1 200 OK\r\nContent-Type: "
                 "text/html\r\n\r\n<html><body><h1>Hi</h1></body></html>";
     _accept(web_server);
-    valread = read(web_server->client_socket, buffer, 1024 - 1);
-    char *buf = malloc(sizeof(buffer));
-    strcpy(buf, buffer);
-    char *tok = strtok(buf, "\n");
-    char *method = (char *)malloc(strlen(tok));
-    char *url = (char *)malloc(strlen(tok));
-    char *http_version = (char *)malloc(strlen(tok));
-    sscanf(tok, "%s %s %s", method, url, http_version);
-    int i = 0;
-    char ***heads = (char ***)malloc(sizeof(char **) * 100);
-    while (1) {
-      tok = strtok(NULL, "\n");
-      heads[i] = (char **)malloc(sizeof(char *) * 100);
-      heads[i][0] = (char *)malloc(strlen(tok));
-      heads[i][1] = (char *)malloc(strlen(tok));
-      if (tok == NULL) {
-        break;
-      }
-      if (strcmp(tok, "\r") == 0) {
-        break;
-      }
-      sscanf(tok, "%[^:]%*c%*c%[^\n]", heads[i][0], heads[i][1]);
-      i++;
-    }
-
-    for (int x = 0; x < i; x++) {
-      printf("%s->", heads[x][0]);
-      printf("%s\n", heads[x][1]);
-    }
+    _read(web_server);
 
     send(web_server->client_socket, msg, strlen(msg), 0);
 
-    for (int y = 0; y < i; y++) {
-      free(heads[y][0]);
-      heads[y][0] = NULL;
-      free(heads[y][1]);
-      heads[y][1] = NULL;
-      free(heads[y]);
-      heads[y] = NULL;
+    for (int y = 0; y < web_server->header_len; y++) {
+      free(web_server->headers[y][0]);
+      web_server->headers[y][0] = NULL;
+      free(web_server->headers[y][1]);
+      web_server->headers[y][1] = NULL;
+      free(web_server->headers[y]);
+      web_server->headers[y] = NULL;
     }
-    free(heads);
-    heads = NULL;
-    free(buf);
-    free(method);
-    free(url);
-    free(http_version);
+    free(web_server->headers);
+    web_server->headers = NULL;
+    free(web_server->method);
+    free(web_server->url);
+    free(web_server->http_version);
     close(web_server->client_socket);
   }
   close(web_server->server_fd);
+  free(web_server);
 }
