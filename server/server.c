@@ -88,30 +88,37 @@ void _read(server *web_server) {
   free(buf);
 }
 
+void _clear(server *web_server) {
+
+  for (int y = 0; y < web_server->header_len; y++) {
+    free(web_server->headers[y][0]);
+    web_server->headers[y][0] = NULL;
+    free(web_server->headers[y][1]);
+    web_server->headers[y][1] = NULL;
+    free(web_server->headers[y]);
+    web_server->headers[y] = NULL;
+  }
+  free(web_server->headers);
+  web_server->headers = NULL;
+  free(web_server->method);
+  free(web_server->url);
+  free(web_server->http_version);
+  close(web_server->client_socket);
+}
+
+void _send(server *web_server) {
+  char *msg = "HTTP/1.1 200 OK\r\nContent-Type: "
+              "text/html\r\n\r\n<html><body><h1>Hi</h1></body></html>";
+  send(web_server->client_socket, msg, strlen(msg), 0);
+}
+
 void accept_clients(server *web_server) {
   _listen(web_server);
   while (1) {
-    char *msg = "HTTP/1.1 200 OK\r\nContent-Type: "
-                "text/html\r\n\r\n<html><body><h1>Hi</h1></body></html>";
     _accept(web_server);
     _read(web_server);
-
-    send(web_server->client_socket, msg, strlen(msg), 0);
-
-    for (int y = 0; y < web_server->header_len; y++) {
-      free(web_server->headers[y][0]);
-      web_server->headers[y][0] = NULL;
-      free(web_server->headers[y][1]);
-      web_server->headers[y][1] = NULL;
-      free(web_server->headers[y]);
-      web_server->headers[y] = NULL;
-    }
-    free(web_server->headers);
-    web_server->headers = NULL;
-    free(web_server->method);
-    free(web_server->url);
-    free(web_server->http_version);
-    close(web_server->client_socket);
+    _send(web_server);
+    _clear(web_server);
   }
   close(web_server->server_fd);
   free(web_server);
