@@ -11,13 +11,14 @@
 #include <sys/types.h>
 
 typedef struct server {
-  int server_fd;
+  int server_fd, client_socket;
   struct sockaddr_in address;
   int opt;
   socklen_t addrlen;
   int port;
 } server;
 
-server create_server(int opt, int port);
+server *create_server(int port);
+void accept_clients(server *web_server);
 
 #endif
