@@ -1,14 +1,16 @@
 #ifndef SERVER_H
 #define SERVER_H
 #include "netinet/in.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
 #include "sys/socket.h"
 #include "unistd.h"
 #include <asm-generic/socket.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+
+typedef struct route {
+  char *path;
+  int (*func)(int, int);
+} route;
 
 typedef struct server {
   int server_fd, client_socket;
@@ -24,5 +26,6 @@ typedef struct server {
 
 server *create_server(int port);
 void accept_clients(server *web_server);
+void close_server(server *web_server);
 
 #endif

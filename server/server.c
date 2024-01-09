@@ -1,4 +1,7 @@
 #include "server.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
 
 server *create_server(int port) {
   server *web_server = (server *)malloc(sizeof(server));
@@ -69,10 +72,7 @@ void _read(server *web_server) {
         (char *)malloc(strlen(tok));
     web_server->headers[web_server->header_len][1] =
         (char *)malloc(strlen(tok));
-    if (tok == NULL) {
-      break;
-    }
-    if (strcmp(tok, "\r") == 0) {
+    if (tok == NULL || strcmp(tok, "\r") == 0) {
       break;
     }
     sscanf(tok, "%[^:]%*c%*c%[^\n]",
@@ -89,7 +89,6 @@ void _read(server *web_server) {
 }
 
 void _clear(server *web_server) {
-
   for (int y = 0; y < web_server->header_len; y++) {
     free(web_server->headers[y][0]);
     web_server->headers[y][0] = NULL;
@@ -120,6 +119,9 @@ void accept_clients(server *web_server) {
     _send(web_server);
     _clear(web_server);
   }
+}
+
+void close_server(server *web_server) {
   close(web_server->server_fd);
   free(web_server);
 }
