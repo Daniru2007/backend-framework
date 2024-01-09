@@ -57,6 +57,7 @@ void _read(server *web_server) {
   char *buf = malloc(sizeof(web_server->buffer));
   strcpy(buf, web_server->buffer);
   char *tok = strtok(buf, "\n");
+  web_server->content = (char *)malloc(strlen(web_server->buffer));
   web_server->method = (char *)malloc(strlen(tok));
   web_server->url = (char *)malloc(strlen(tok));
   web_server->http_version = (char *)malloc(strlen(tok));
@@ -72,7 +73,11 @@ void _read(server *web_server) {
         (char *)malloc(strlen(tok));
     web_server->headers[web_server->header_len][1] =
         (char *)malloc(strlen(tok));
-    if (tok == NULL || strcmp(tok, "\r") == 0) {
+    if (tok == NULL) {
+      break;
+    }
+    if (strcmp(tok, "\r") == 0) {
+      web_server->content = strtok(NULL, "");
       break;
     }
     sscanf(tok, "%[^:]%*c%*c%[^\n]",
@@ -85,6 +90,7 @@ void _read(server *web_server) {
     printf("%s->", web_server->headers[x][0]);
     printf("%s\n", web_server->headers[x][1]);
   }
+  printf("%s\n", web_server->content);
   free(buf);
 }
 
