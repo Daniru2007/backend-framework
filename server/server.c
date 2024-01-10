@@ -5,6 +5,9 @@
 
 server *create_server(int port) {
   server *web_server = (server *)malloc(sizeof(server));
+  web_server->_route_len = 0;
+  web_server->routes =
+      (route **)malloc(sizeof(route) * web_server->_route_len + 100);
   web_server->port = port;
   web_server->opt = 1;
   printf("creating server...\n");
@@ -63,6 +66,11 @@ void _read(server *web_server) {
   web_server->http_version = (char *)malloc(strlen(tok));
   sscanf(tok, "%s %s %s", web_server->method, web_server->url,
          web_server->http_version);
+  for (int i = 0; i < web_server->_route_len; i++) {
+    if (strcmp(web_server->url, web_server->routes[i]->path) == 0) {
+      web_server->routes[i]->func(web_server);
+    }
+  }
   web_server->header_len = 0;
   web_server->headers = (char ***)malloc(sizeof(char **) * 100);
   while (1) {
@@ -128,6 +136,18 @@ void accept_clients(server *web_server) {
 }
 
 void close_server(server *web_server) {
+  for (int i = 0; i < web_server->_route_len; i++) {
+    free(web_server->routes[i]);
+  }
+  free(web_server->routes);
   close(web_server->server_fd);
   free(web_server);
+}
+
+void add_route(server *web_server, char *path, void (*func)(server *)) {
+  route *this_route = (route *)malloc(sizeof(route));
+  this_route->func = func;
+  this_route->path = path;
+  web_server->routes[web_server->_route_len] = this_route;
+  web_server->_route_len++;
 }
