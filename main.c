@@ -1,7 +1,4 @@
 #include "server/server.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
 
 int main() {
   server *test_server = create_server(8000);

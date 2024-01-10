@@ -18,7 +18,10 @@ typedef struct server {
   int opt;
   socklen_t addrlen;
   int port;
-  char *method, *url, *http_version, *content;
+  char *method;
+  char *url;
+  char *http_version;
+  char *content;
   char buffer[2048];
   char ***headers;
   int header_len;
@@ -27,6 +30,6 @@ typedef struct server {
 server *create_server(int port);
 void accept_clients(server *web_server);
 void close_server(server *web_server);
-void add_route(char *path, int (*func)(int, int));
+void add_route(char *path, void (*func)(server *));
 
 #endif
