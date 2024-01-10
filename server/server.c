@@ -67,11 +67,6 @@ void _read(server *web_server) {
   web_server->http_version = (char *)malloc(strlen(tok));
   sscanf(tok, "%s %s %s", web_server->method, web_server->url,
          web_server->http_version);
-  for (int i = 0; i < web_server->_route_len; i++) {
-    if (strcmp(web_server->url, web_server->routes[i]->path) == 0) {
-      web_server->routes[i]->func(web_server);
-    }
-  }
   web_server->header_len = 0;
   web_server->headers = (char ***)malloc(sizeof(char **) * 100);
   while (1) {
@@ -93,6 +88,23 @@ void _read(server *web_server) {
            web_server->headers[web_server->header_len][0],
            web_server->headers[web_server->header_len][1]);
     web_server->header_len++;
+  }
+
+  for (int i = 0; i < web_server->_route_len; i++) {
+    char *url = (char *)malloc(sizeof(char) * strlen(web_server->url));
+    strcpy(url, web_server->url);
+    char *metok = strtok(url, "?");
+    if (strcmp(metok, web_server->routes[i]->path) == 0) {
+      web_server->routes[i]->func(web_server);
+      while (1) {
+        metok = strtok(NULL, "?");
+        if (metok == NULL) {
+          break;
+        }
+        printf("metok: %s\n", metok);
+      }
+    }
+    free(url);
   }
 
   for (int x = 0; x < web_server->header_len; x++) {

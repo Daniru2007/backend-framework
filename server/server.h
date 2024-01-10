@@ -28,6 +28,8 @@ typedef struct server {
 typedef struct route {
   char *path;
   void (*func)(server *);
+  char **args;
+  int _arg_len;
 } route;
 
 server *create_server(int port);
