@@ -2,7 +2,11 @@
 #include "stdio.h"
 
 void func(server *web_server) { printf("FUUUUUCK YOU!\n"); }
-void func2(server *web_server) { printf("KISS MY PISS!\n"); }
+void func2(server *web_server) {
+  printf("KISS MY PISS!\n");
+  printf("%s\n", web_server->args[0][0]);
+  printf("%s\n", web_server->args[0][1]);
+}
 
 int main() {
   server *test_server = create_server(8000);

@@ -23,13 +23,13 @@ typedef struct server {
   int header_len;
   route **routes;
   int _route_len;
+  char ***args;
+  int _arg_len;
 } server;
 
 typedef struct route {
   char *path;
   void (*func)(server *);
-  char **args;
-  int _arg_len;
 } route;
 
 server *create_server(int port);

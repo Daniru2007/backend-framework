@@ -95,14 +95,24 @@ void _read(server *web_server) {
     strcpy(url, web_server->url);
     char *metok = strtok(url, "?");
     if (strcmp(metok, web_server->routes[i]->path) == 0) {
-      web_server->routes[i]->func(web_server);
+      // TODO stop manual allocation
+      web_server->args = (char ***)malloc(sizeof(char) * 100);
+      int y = 0;
       while (1) {
-        metok = strtok(NULL, "?");
+        metok = strtok(NULL, "&");
         if (metok == NULL) {
           break;
         }
+        // TODO remove manual allocation again
+        web_server->args[y] = (char **)malloc(sizeof(char) * 100);
+        web_server->args[y][0] = (char *)malloc(2048);
+        web_server->args[y][1] = (char *)malloc(2048);
+        sscanf(metok, "%[^=]%*c%[^\n]", web_server->args[y][0],
+               web_server->args[y][1]);
+        y++;
         printf("metok: %s\n", metok);
       }
+      web_server->routes[i]->func(web_server);
     }
     free(url);
   }
@@ -129,6 +139,13 @@ void _clear(server *web_server) {
   free(web_server->method);
   free(web_server->url);
   free(web_server->http_version);
+  for (int y = 0; y < web_server->_arg_len; y++) {
+    free(web_server->args[y][0]);
+    web_server->args[y][0] = NULL;
+    free(web_server->args[y][1]);
+    web_server->args[y][1] = NULL;
+  }
+  free(web_server->args);
   close(web_server->client_socket);
 }
 
