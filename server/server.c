@@ -5,6 +5,7 @@
 
 server *create_server(int port) {
   server *web_server = (server *)malloc(sizeof(server));
+  // TODO stop manually allocating this and do something :(
   web_server->_route_len = 0;
   web_server->routes =
       (route **)malloc(sizeof(route) * web_server->_route_len + 100);
